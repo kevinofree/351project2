@@ -1,78 +1,105 @@
 #include <iostream>
-#include <iomanip>
-#include <stdlib.h>
+#include <math.h>
+#include <vector>
 #include <fstream>
 #include <string>
 
-void MemoryManager();
 struct Process
 {
-	int id;
+	int pid;
 	int arrivalTime;
-	int completionTime;
-	int numPieces;
+	int startTime;
+	int timeToComplete;
+	int numOfPieces;
 	int totalAddressSpace;
+	int turnAroundTime;
+	int waitTime;
+	int framesNeeded;
 };
 
 int main()
 {
-	long memSize = 0;
-	int pageSize = 0;
+	// Input variables for the user
 	Process* processArray;
-	int memPiece = 0;
-	std::string fileName;
+	int memSize, pageSize, frameCount, arraySize, freeFrames;
+	int completeCounter = 0;
+	int time = 0;
+	std::string iFileName, oFileName;
 	std::ifstream input;
 	std::ofstream output;
 
-	//Prompt user for both the memory size and page size
+	// Ask for user input
 	std::cout << "Enter the memory size (kB): ";
 	std::cin >> memSize;
 	std::cout << "Enter the page size (kB): ";
 	std::cin >> pageSize;
 
-	if(pageSize > memSize)
-	{
-		std::cout << "Page size cannot be larger than the memory size. Restart the program.\n";
-		exit(EXIT_FAILURE);
-	}
-
-	//Prompt user for the input file
+	std::cin.ignore();
 	std::cout << "Enter the input file name (including file extension): ";
-	std::cin >> fileName;
+	std::getline(std::cin, iFileName);
 
-	//Begin reading the input file
-	input.open(fileName, std::ifstream::in);
+	std::cin.ignore();
+	std::cout << "Enter the output file name (including file extension)";
+	std::getline(std::cin, oFileName);
 
-	//Grab first char to determine how many processes
-	char c = input.get();
-	std::cout << c << endl;
+	// Open the input file and create the output file
+	input.open(iFileName.c_str(), std::ifstream::in);
+	output.open(oFileName.c_str(), std::ofstream::out);
+
+	// Create the vectors for memArray and pageArray for printing
+	arraySize = memSize / pageSize;
+	freeFrames = arraySize;
+	std::vector<int> memArray(arraySize, 0);
+	std::vector<int> pageArray(arraySize, 0);
+
+	// Begin inputting info from the input file and create an array of structures
+	int numOfProcesses = 0;
+	input >> numOfProcesses;
+	processArray = new Process[numOfProcesses];
+
 	int counter = 0;
-	processArray = new Process[int(c)];
-
-	while(!input.eof())
+	int memPiece = 0;
+	while (!input.eof())
 	{
-		input >> processArray[counter].id;
-		input >> processArray[counter].arrivalTime >> 
-			processArray[counter].completionTime;
-		input >> processArray[counter].numPieces;
-		for(int i = 0; i < processArray[counter].numPieces; i++)
+		input >> processArray[counter].pid;
+		input >> processArray[counter].arrivalTime;
+		input >> processArray[counter].timeToComplete;
+		input >> processArray[counter].numOfPieces;
+		for (int i = 0; i < processArray[counter].numOfPieces; i++)
 		{
 			input >> memPiece;
 			processArray[counter].totalAddressSpace += memPiece;
 		}
-		counter++;
+		processArray[counter].turnAroundTime = 0;
+		processArray[counter].waitTime = 0;
+		processArray[counter].framesNeeded = int(ceil(double(processArray[counter].totalAddressSpace) / pageSize));
 	}
+	input.close(); // close the input file
 
-	for(int i = 0; i < int(c); i++)
-	{
-		std::cout << "ProcessID: " << processArray[i].id <<std:: endl;
-		std::cout << "Arrival Time: " << processArray[i].arrivalTime <<std::endl;
-		std::cout << "Completion Time: " << processArray[i].completionTime << std::endl;
-		std::cout << "Total Address Space: " << processArray[i].totalAddressSpace << std::endl;
-	}
+	// BEGIN MEMORY MANAGEMENT
+	do
+	{	// Check starting times
+		// Process arrives and is placed in input queue
+		for (int i = 0; i < numOfProcesses - 1; i++)
+		{
+			if (processArray[i].arrivalTime <= time && freeFrames >= processArray[i].framesNeeded)
+			{
+				std::cout << "Process " << processArray[i].pid << "Arrives\n";
+				// PLACE INTO INPUT QUEUE
+				// ALLOCATE INTO MEMORY
+			}
+		}
+
+
+		// Check for Process completions
+
+		// Check for the full completion
+
+		// Increment the global time
+		time++;
+	} while (completeCounter != numOfProcesses);
+
+	// Close the output file
+	output.close();
 	return 0;
-}
-
-void MemoryManager()
-{
 }
